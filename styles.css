@@ -189,3 +189,15 @@ img{max-width:100%;display:block}
 .avatar.sp{background:linear-gradient(135deg,#0b0b12,#2b2f45)}
 .member .ext{display:inline-block;margin-top:.5rem;font-size:.8rem;color:var(--blue);font-weight:600}
 .avatar-logo{width:84px;height:84px;margin:0 auto 1rem;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--gold)}
+
+/* levitating, animated logo */
+.hero-logo{position:absolute;right:max(4%,calc((100vw - 1160px)/2 - 20px));top:50%;width:400px;height:460px;transform:translateY(-50%);z-index:1;pointer-events:none}
+.hero-logo .float{animation:levitate 5s ease-in-out infinite}
+.mark-hero{width:400px;height:400px;display:block;overflow:visible;filter:drop-shadow(0 0 22px rgba(255,214,90,.35))}
+.hero-logo .ground{width:200px;height:26px;margin:4px auto 0;border-radius:50%;background:radial-gradient(ellipse,rgba(255,214,90,.28),rgba(0,0,0,.45) 40%,transparent 70%);animation:shadow 5s ease-in-out infinite}
+.brand-mark{height:46px;width:46px;overflow:visible;filter:drop-shadow(0 0 6px rgba(255,214,90,.45))}
+.brand img{display:none}
+@keyframes levitate{0%,100%{transform:translateY(12px)}50%{transform:translateY(-20px)}}
+@keyframes shadow{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(.72);opacity:.45}}
+@media (prefers-reduced-motion:reduce){.hero-logo .float,.hero-logo .ground{animation:none}}
+@media (max-width:1080px){.hero-logo{width:240px;height:280px;right:50%;top:84px;transform:translateX(50%)}.mark-hero{width:240px;height:240px}.hero-logo .ground{width:120px}.hero-inner{padding-top:340px}}
