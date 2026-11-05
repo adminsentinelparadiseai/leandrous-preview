@@ -35,5 +35,5 @@
     } catch {}
   };
   check();
-  setInterval(check, 30000);
+  setInterval(check, 10000);
 })();

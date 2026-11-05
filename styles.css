@@ -190,14 +190,22 @@ img{max-width:100%;display:block}
 .member .ext{display:inline-block;margin-top:.5rem;font-size:.8rem;color:var(--blue);font-weight:600}
 .avatar-logo{width:84px;height:84px;margin:0 auto 1rem;border-radius:50%;object-fit:cover;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--gold)}
 
-/* levitating, animated logo */
-.hero-logo{position:absolute;right:max(4%,calc((100vw - 1160px)/2 - 20px));top:50%;width:400px;height:460px;transform:translateY(-50%);z-index:1;pointer-events:none}
+/* levitating logo that spins like a saucer */
+.hero-logo{position:absolute;right:max(4%,calc((100vw - 1160px)/2 - 20px));top:50%;width:400px;height:470px;transform:translateY(-50%);z-index:1;pointer-events:none}
 .hero-logo .float{animation:levitate 5s ease-in-out infinite}
-.mark-hero{width:400px;height:400px;display:block;overflow:visible;filter:drop-shadow(0 0 22px rgba(255,214,90,.35))}
-.hero-logo .ground{width:200px;height:26px;margin:4px auto 0;border-radius:50%;background:radial-gradient(ellipse,rgba(255,214,90,.28),rgba(0,0,0,.45) 40%,transparent 70%);animation:shadow 5s ease-in-out infinite}
-.brand-mark{height:46px;width:46px;overflow:visible;filter:drop-shadow(0 0 6px rgba(255,214,90,.45))}
+.hero-logo .tilt{perspective:1100px}
+.hero-logo .spin{position:relative;width:400px;height:400px;transform-style:preserve-3d;animation:saucer 7s linear infinite}
+.hero-logo .layer{position:absolute;inset:0;width:100%;height:100%;overflow:visible;transform:translateZ(var(--z));filter:brightness(var(--b))}
+.hero-logo .layer:first-child,.hero-logo .layer:last-child{filter:drop-shadow(0 0 18px rgba(255,214,90,.4))}
+.hero-logo .ground{width:210px;height:26px;margin:10px auto 0;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.6),transparent 70%);animation:ground 7s linear infinite}
+.brand-mark{height:46px;width:46px;overflow:visible;filter:drop-shadow(0 0 6px rgba(255,214,90,.45));animation:brandspin 7s linear infinite}
 .brand img{display:none}
+@keyframes saucer{from{transform:rotateX(12deg) rotateY(0deg)}to{transform:rotateX(12deg) rotateY(360deg)}}
+@keyframes brandspin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
 @keyframes levitate{0%,100%{transform:translateY(12px)}50%{transform:translateY(-20px)}}
-@keyframes shadow{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(.72);opacity:.45}}
-@media (prefers-reduced-motion:reduce){.hero-logo .float,.hero-logo .ground{animation:none}}
-@media (max-width:1080px){.hero-logo{width:240px;height:280px;right:50%;top:84px;transform:translateX(50%)}.mark-hero{width:240px;height:240px}.hero-logo .ground{width:120px}.hero-inner{padding-top:340px}}
+@keyframes ground{0%,50%,100%{transform:scaleX(1);opacity:.85}25%,75%{transform:scaleX(.45);opacity:.6}}
+@media (prefers-reduced-motion:reduce){.hero-logo .float,.hero-logo .spin,.hero-logo .ground,.brand-mark{animation:none}}
+@media (max-width:1080px){.hero-logo{width:240px;height:290px;right:50%;top:84px;transform:translateX(50%)}.hero-logo .spin{width:240px;height:240px}.hero-logo .ground{width:130px}.hero-inner{padding-top:340px}}
+.hero-logo{height:540px}
+.hero-logo .wordmark{margin-top:14px;text-align:center;font-family:"Space Grotesk",Inter,sans-serif;font-weight:700;font-size:40px;letter-spacing:.22em;padding-left:.22em;background:linear-gradient(180deg,#ffffff,#9cc3ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 24px rgba(90,169,255,.25)}
+@media (max-width:1080px){.hero-logo{height:330px}.hero-logo .wordmark{font-size:24px;margin-top:8px}.hero-inner{padding-top:430px}}
