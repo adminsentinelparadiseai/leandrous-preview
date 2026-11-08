@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Secure Portal | Leandrous</title>
+  <link rel="icon" href="assets/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=14">
+  <style>
+    .vault{display:none}
+    .vault.open{display:block}
+    .vault video{width:100%;border-radius:14px;background:#000;box-shadow:var(--shadow)}
+    .vault h2{margin-top:2.5rem}
+    .vault .card{margin-top:1rem}
+    .contacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1rem}
+    .contacts .card a{font-weight:600}
+    .progress{font-size:.9rem;color:var(--muted);margin-top:.8rem;text-align:center;display:none}
+    .progress.show{display:block}
+  </style>
+</head>
+<body>
+  <header class="portal-top">
+    <div class="wrap nav-inner">
+      <a href="./" class="brand"><img src="assets/logo.png" alt="" style="display:block;height:44px;background:#fff;border-radius:10px;padding:2px"><span>LEANDROUS</span></a>
+      <a href="./" class="btn btn-small btn-gold">Back to site</a>
+    </div>
+  </header>
+
+  <main class="auth-page" id="gate">
+    <form class="auth-card" id="unlock" autocomplete="off">
+      <img src="assets/logo.png" alt="Leandrous">
+      <h1>Secure Portal</h1>
+      <p class="sub">Confidential materials shared by the founder. Enter the portal password.</p>
+      <div class="auth-err" id="err" role="alert"></div>
+      <label for="pw">Password</label>
+      <input id="pw" type="password" autocomplete="current-password" required>
+      <button class="btn btn-gold" type="submit">Unlock</button>
+      <p class="progress" id="progress">Unlocking…</p>
+      <a class="back" href="./">← Back to leandrous.com</a>
+    </form>
+  </main>
+
+  <main class="portal-main vault" id="vault">
+    <div class="wrap">
+      <p class="eyebrow">Secure Portal</p>
+      <h1>Founder's Briefing</h1>
+      <p class="section-lead" style="margin-bottom:1.5rem">Confidential. Please do not record, forward or redistribute these materials.</p>
+      <video id="video" controls playsinline preload="metadata"></video>
+      <p class="fine" id="videoTitle"></p>
+
+      <h2>Contact Us</h2>
+      <div class="contacts" id="contacts"></div>
+
+      <h2>Shared documents</h2>
+      <div class="card"><p>Additional documents are shared in a private folder. Access is granted to approved partners by email.</p>
+        <p style="margin-top:.8rem"><a id="docs" class="btn btn-gold" target="_blank" rel="noopener">Open document folder</a></p></div>
+      <p class="notice">Forward-looking statements are subject to risks and uncertainties. Nothing here is an offer to sell or a solicitation of an offer to buy any security.</p>
+    </div>
+  </main>
+
+<script>
+// Files are AES-256-CBC encrypted (OpenSSL "Salted__" format, PBKDF2-SHA256).
+// Nothing readable is stored on the server; the password never leaves the browser.
+const ITER = 250000;
+async function decrypt(buf, password) {
+  const bytes = new Uint8Array(buf);
+  const salt = bytes.slice(8, 16), data = bytes.slice(16);
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: ITER, hash: 'SHA-256' }, base, 384));
+  const key = await crypto.subtle.importKey('raw', bits.slice(0, 32), 'AES-CBC', false, ['decrypt']);
+  return crypto.subtle.decrypt({ name: 'AES-CBC', iv: bits.slice(32, 48) }, key, data);
+}
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const form = document.getElementById('unlock'), err = document.getElementById('err'), prog = document.getElementById('progress');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  err.classList.remove('show'); prog.classList.add('show');
+  const btn = form.querySelector('button'); btn.disabled = true;
+  const pw = document.getElementById('pw').value;
+  try {
+    const vaultBuf = await fetch('vault.bin', { cache: 'no-store' }).then((r) => r.arrayBuffer());
+    let vault;
+    try { vault = JSON.parse(new TextDecoder().decode(await decrypt(vaultBuf, pw))); }
+    catch { throw new Error('bad'); }
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('vault').classList.add('open');
+    document.getElementById('videoTitle').textContent = vault.video.title + ' · ' + vault.video.duration;
+    document.getElementById('docs').href = vault.documentsUrl;
+    document.getElementById('contacts').innerHTML = vault.contacts.map((c) =>
+      `<div class="card"><h3>${esc(c.name)}</h3><p>${esc(c.role)}</p>` +
+      (c.phone ? `<p><a href="tel:${esc(c.phone.replace(/[^0-9+]/g, ''))}">${esc(c.phone)}</a></p>` : '') +
+      (c.email ? `<p><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></p>` : '') + `</div>`).join('');
+    const chunks = await Promise.all(vault.video.parts.map((p) => fetch(p).then((r) => { if (!r.ok) throw new Error("load"); return r.arrayBuffer(); })));
+    const vbuf = await new Blob(chunks).arrayBuffer();
+    const plain = await decrypt(vbuf, pw);
+    document.getElementById('video').src = URL.createObjectURL(new Blob([plain], { type: 'video/mp4' }));
+  } catch (x) {
+    err.textContent = x.message === 'bad' ? 'Incorrect password.' : 'Could not load the portal. Please try again.';
+    err.classList.add('show');
+  }
+  prog.classList.remove('show'); btn.disabled = false;
+});
+</script>
+</body>
+</html>
